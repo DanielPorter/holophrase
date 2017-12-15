@@ -1,7 +1,10 @@
 package holophrase
 
 
+import java.nio.file.{Files, Paths}
+
 import play.api.libs.json._
+
 import sys.process._
 import language.postfixOps
 import scala.collection.mutable
@@ -41,13 +44,7 @@ object SSHKeys {
 
 object holophrase0 {
 
-  def main(args: Array[String]): Unit = {
-    args.toList match {
-      case Nil => Holophrase.shell
-      case x if x=="stopall" =>
-    }
 
-  }
   def getDigitalOceanSSHKeyId(): SSHKey = {
     // if key doesn't already exist..
     "bash createHolophraseKey.sh" !

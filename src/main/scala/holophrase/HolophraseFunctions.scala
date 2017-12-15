@@ -3,7 +3,7 @@ import sys.process._
 import play.api.libs.json._
 import language.postfixOps
 
-object holophrase1 {
+object HolophraseFunctions {
 
   def createHolophraseKey = createHolophraseKeyCommand !
   def createHolophraseKeyCommand = "bash createHolophraseKey.sh"

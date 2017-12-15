@@ -3,23 +3,23 @@ package holophrase
 import java.io.PrintWriter
 
 import scala.util.{Random, Try}
-import holophrase1._
+import HolophraseFunctions._
 import java.nio.file.{Files, Paths}
 
-sealed trait Holophrase {
+sealed trait HolophraseDSL {
   // Builds a droplet
   def run(ip: String=""): DigitalOceanDroplet = {
     this match {
       case s @ DigitalOceanServer(_, repo) =>
-        val droplet = holophrase1.createDigitalOceanVM(s.fullName)
+        val droplet = HolophraseFunctions.createDigitalOceanVM(s.fullName)
         repo.run(droplet.ip)
         droplet
 
       case ScalaRepo(url, running) =>
-        holophrase1.installSBT(ip)
-        holophrase1.cloneRepo(ip, url)
+        HolophraseFunctions.installSBT(ip)
+        HolophraseFunctions.cloneRepo(ip, url)
         running.run(ip)
-      case SBTCommand(value) => holophrase1.runCommand(ip, value)
+      case SBTCommand(value) => HolophraseFunctions.runCommand(ip, value)
     }
   }
 
@@ -47,10 +47,10 @@ sealed trait Holophrase {
   // destroys a droplet by name. Might have splash damage.
   def destroy: Unit = {
     this match {
-      case DigitalOceanServer(name, _) =>
-        getAllDroplets
-          .filter(_.name==name)
-          .foreach {destroyDroplet}
+      case droplet @ DigitalOceanServer(name, _) =>
+        println(getAllDroplets
+          .filter{x => println(x.name); x.name == droplet.fullName}
+          .map {destroyDroplet})
       case _ => Nil
     }
   }
@@ -70,9 +70,10 @@ sealed trait Holophrase {
     }
   }
 }
-object Holophrase {
+object HolophraseDSL {
+
   def stopAllServers = {
-    holophrase1.getAllDroplets.filter(_.name.startsWith(DigitalOceanServer.getName(""))) foreach {holophrase1.destroyDroplet}
+    HolophraseFunctions.getAllDroplets.filter(_.name.startsWith(DigitalOceanServer.getName(""))) foreach {HolophraseFunctions.destroyDroplet}
   }
   def shell = {
     while(true) {
@@ -88,6 +89,37 @@ object Holophrase {
           if(validationResult.isEmpty) server.run()
           else println(validationResult.mkString("\n"))
       }
+    }
+  }
+  def runOrFail(input: String): Unit = {
+    holophraseparser.run(input).validate match {
+      case Left(error) => println(error)
+      case Right(server) =>
+        println(server)
+        val validationResult = server.validate
+        if(validationResult.isEmpty) server.run()
+        else println(validationResult.mkString("\n"))
+    }
+  }
+
+  def killOrFail(input: String): Unit = {
+    holophraseparser.run(input).validate match {
+      case Left(error) => println(error)
+      case Right(server) =>
+        println(server)
+        val validationResult = server.validate
+        if(validationResult.isEmpty) server.destroy
+        else println(validationResult.mkString("\n"))
+    }
+  }
+  def validate(input: String): Unit = {
+    holophraseparser.run(input).validate match {
+      case Left(error) => println(error)
+      case Right(server) =>
+        println(server)
+        val validationResult = server.validate
+        if(validationResult.isEmpty) ()
+        else println(validationResult.mkString("\n"))
     }
   }
 }
@@ -108,7 +140,7 @@ object DigitalOceanServer {
 
 
 }
-case class DigitalOceanServer(name: String, repo: ScalaRepo) extends Holophrase {
+case class DigitalOceanServer(name: String, repo: ScalaRepo) extends HolophraseDSL {
   val fullName: String = getName(name)
 
   def getOrCreateUniqueId = {
@@ -122,8 +154,8 @@ case class DigitalOceanServer(name: String, repo: ScalaRepo) extends Holophrase 
   def getName(name: String) = s"${System.getProperty("user.name")}-$getOrCreateUniqueId-$name"
 
 }
-case class ScalaRepo(url: String, runWith: SBTCommand) extends Holophrase
-case class SBTCommand(value: String) extends Holophrase
+case class ScalaRepo(url: String, runWith: SBTCommand) extends HolophraseDSL
+case class SBTCommand(value: String) extends HolophraseDSL
 
 
 object holophrase2 {
