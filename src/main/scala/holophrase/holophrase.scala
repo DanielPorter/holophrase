@@ -42,7 +42,7 @@ object SSHKeys {
 object holophrase0 {
 
   def main(args: Array[String]): Unit = {
-    createServerRunning("testserver", "https://github.com/slamdata/matryoshka", "compile")
+    createServerRunning("testserver", "https://github.com/danielporter/holophrase.git", "run")
 
   }
   def getDigitalOceanSSHKeyId(): SSHKey = {
@@ -54,7 +54,6 @@ object holophrase0 {
 
     val username = ("bash getUsername.sh" !!).dropRight(1)
 
-    println(s"""bash getDOKeys.sh""" !!)
     val keys = Json.parse(s"""bash getDOKeys.sh""" !!).as[SSHKeys].ssh_keys.filter(_.public_key == holophrasePub)
 
     // if the key is already registered with DO, return the id. Otherwise, register it and return the id.
