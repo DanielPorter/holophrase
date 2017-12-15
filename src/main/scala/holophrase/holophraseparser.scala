@@ -6,6 +6,7 @@ import scala.util.parsing.input.Positional
 // "Server(name=\"myserver\", repost=\"https://github.com/slamdata/matryoshka\", command=\"build\")"
 // valid
 // "Server(name=\"myserver\", repo=\"https://github.com/slamdata/matryoshka.git\", command=\"compile\")"
+// Server(name="myserver", repo="https://github.com/slamdata/matryoshka.git", command="compile")
 
 sealed trait HolophraseAST extends Positional {
   val validIdentifiers = Set(
@@ -81,7 +82,10 @@ object holophrasedemoparser extends RegexParsers {
 object holophraseparser extends RegexParsers {
 
   val identifier = positioned {"[a-zA-Z]+".r ^^ Identifier}
-  val stringLiteral = positioned {"\".*?\"".r ^^ {x => StringLiteral(x)}}
+  def stringLiteral = "\".*?\"".r ^^ {literal =>
+    //lop off the captured quotes..
+    StringLiteral(literal.drop(1).dropRight(1))
+  }
   val unterminatedString = positioned {"\".*?$".r ^^ {x => UnterminatedString(x)}}
   val equals: Parser[EQUALS] = positioned { "=" ^^ { _ => EQUALS()}}
 

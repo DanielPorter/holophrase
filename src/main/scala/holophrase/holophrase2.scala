@@ -7,8 +7,6 @@ import holophrase1._
 import java.nio.file.{Files, Paths}
 
 sealed trait Holophrase {
-
-
   // Builds a droplet
   def run(ip: String=""): DigitalOceanDroplet = {
     this match {
@@ -72,7 +70,27 @@ sealed trait Holophrase {
     }
   }
 }
+object Holophrase {
+  def stopAllServers = {
+    holophrase1.getAllDroplets.filter(_.name.startsWith(DigitalOceanServer.getName(""))) foreach {holophrase1.destroyDroplet}
+  }
+  def shell = {
+    while(true) {
+      println("please specify a server to build.")
+      val input = io.StdIn.readLine()
+      if(input == "quit") sys.exit(0)
 
+      holophraseparser.run(input).validate match {
+        case Left(error) => println(error)
+        case Right(server) =>
+          println(server)
+          val validationResult = server.validate
+          if(validationResult.isEmpty) server.run()
+          else println(validationResult.mkString("\n"))
+      }
+    }
+  }
+}
 object DigitalOceanServer {
 
   def getOrCreateUniqueId = {

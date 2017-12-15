@@ -42,7 +42,10 @@ object SSHKeys {
 object holophrase0 {
 
   def main(args: Array[String]): Unit = {
-    createServerRunning("testserver", "https://github.com/danielporter/holophrase.git", "run")
+    args.toList match {
+      case Nil => Holophrase.shell
+      case x if x=="stopall" =>
+    }
 
   }
   def getDigitalOceanSSHKeyId(): SSHKey = {

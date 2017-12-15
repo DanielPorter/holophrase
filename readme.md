@@ -81,7 +81,7 @@ Then destroy it:
 server.destroy
 ```
 
-Compile it to bash, if you're feeling lucky. The code probably doesn't work. Bash is a very special language.
+Compile it to bash! 
 ```scala
 server.compile.mkString("\n")
 ```
