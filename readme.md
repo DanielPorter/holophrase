@@ -16,7 +16,16 @@ Aspirationally, the talk will give you another lens through which to view the mo
 The language and the talk are heavily inspired by James Earl Douglas' talk on NixOps at Lambda Conf earlier this year. Particular thanks to the folks at Underscore for so graciously helping my plodding ascent up the ladder of abstraction.
 
 ## Setup
-
+To run slides
+```bash
+alias REPLesent='scala -Dscala.color -language:_ -nowarn -i REPLesent.scala'
+REPLesent
+scala> val replesent = REPLesent(80, 25, intp=$intp)
+import replesent._
+f
+```
+press n for next, p for previous.
+```
  clone this repo, then acquire the api key:
 ```bash
 git clone https://github.com/danielporter/holophrase
@@ -81,7 +90,7 @@ Then destroy it:
 server.destroy
 ```
 
-Compile it to bash! 
+Compile it to bash! It'
 ```scala
 server.compile.mkString("\n")
 ```
@@ -109,7 +118,7 @@ It's accidentally helpful because the language specified by the parser is so stu
 There's also a slightly more sophisticated parser. It demonstrates "tokenization", wherein you parse a string and things like string literals, parentheses, and language keywords. 
 
 ```scala
-holophraseparser.run("Server(name=\"myserver\", repost=\"https://github.com/slamdata/matryoshka\", command=\"build\")")
+HolophraseParser.run("Server(name=\"myserver\", repost=\"https://github.com/slamdata/matryoshka\", command=\"build\")")
 // res10: holophrase.HolophraseAST = Server(List(Assignment(Identifier(name),StringLiteral("myserver")), Assignment(Identifier(repost),StringLiteral("https://github.com/slamdata/matryoshka")), Assignment(Identifier(command),StringLiteral("build"))))
 ```
 
@@ -126,7 +135,7 @@ Ta da! A genuinely meaningful error message.
 
 The first parser only implicitly succeeds or fails. If it throws an error, you know it failed. The second parser is smarter: it represents the possibility of success or failure with a data structure. We're making the implicit explicit. This is reification.
 
-The parser combinators are another example of reification - when you write the parser combinators (see `holophraseparser.scala`) you're building a structure that represents the parsing you want done, rather than doing the parsing. Even though we have to use forbidding words like reification to describe it, this static structure that explicitly represents the computation makes things easier to think about.
+The parser combinators are another example of reification - when you write the parser combinators (see `HolophraseParser.scala`) you're building a structure that represents the parsing you want done, rather than doing the parsing. Even though we have to use forbidding words like reification to describe it, this static structure that explicitly represents the computation makes things easier to think about.
 
 In case you're interested in more about parsers, here are two really useful resources I've come across which you might not find easily via google:
 

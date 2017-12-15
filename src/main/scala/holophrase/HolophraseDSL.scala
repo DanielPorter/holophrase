@@ -20,6 +20,10 @@ sealed trait HolophraseDSL {
         HolophraseFunctions.cloneRepo(ip, url)
         running.run(ip)
       case SBTCommand(value) => HolophraseFunctions.runCommand(ip, value)
+      case ServerGroup(server, num) =>
+        (0 until num).map { i=>
+          server.copy(name=s"${server.name}-$i").run()
+        } head
     }
   }
 
@@ -62,11 +66,13 @@ sealed trait HolophraseDSL {
         val create = s"bash createDOServer.sh $name $$keyId"
         val createAndCaptureIP =
           s"""|$$id="$$($create | python -c "import sys, json; println(json.load(sys.stdin))['droplet']['id'])")"2
-             |sleep 30
-             |""".stripMargin
+              |sleep 30
+              |""".stripMargin
         List(create, createAndCaptureIP) ++ repo.compile
       case ScalaRepo(url, runWith) =>
-        Nil
+        s"pull the repo at $url" :: runWith.compile
+      case SBTCommand(command) =>
+        List(s"run sbt command $command")
     }
   }
 }
@@ -134,12 +140,8 @@ object DigitalOceanServer {
     io.Source.fromFile("holophraseid").mkString
   }
   def getName(name: String) = s"${System.getProperty("user.name")}-$getOrCreateUniqueId-$name"
-
-
-  def unapply(dos: DigitalOceanServer) = Some((dos.fullName, dos.repo))
-
-
 }
+
 case class DigitalOceanServer(name: String, repo: ScalaRepo) extends HolophraseDSL {
   val fullName: String = getName(name)
 
@@ -153,7 +155,10 @@ case class DigitalOceanServer(name: String, repo: ScalaRepo) extends HolophraseD
   }
   def getName(name: String) = s"${System.getProperty("user.name")}-$getOrCreateUniqueId-$name"
 
+  def *(num: Int) = ServerGroup(this, num)
 }
+
+case class ServerGroup(server: DigitalOceanServer, number: Int) extends HolophraseDSL
 case class ScalaRepo(url: String, runWith: SBTCommand) extends HolophraseDSL
 case class SBTCommand(value: String) extends HolophraseDSL
 

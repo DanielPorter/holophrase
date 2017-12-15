@@ -57,8 +57,6 @@ final case class TokensSequence(tokens: List[HolophraseAST]) extends HolophraseA
 object holophrasedemoparser extends RegexParsers {
   def equals = "="
 
-  def quote = "\""
-
   def stringLiteral = "\".*?\"".r ^^ {literal =>
     //lop off the captured quotes..
     literal.drop(1).dropRight(1)
@@ -68,13 +66,13 @@ object holophrasedemoparser extends RegexParsers {
   def name = "name" ~> equals ~> stringLiteral
   def repo = "repo" ~> equals ~> stringLiteral
   def command = "command" ~> equals ~> stringLiteral
-  def server = "Server(" ~> (name <~ comma).? ~ repo ~ comma ~ command <~ ")" ^^ { case maybeName ~ repo ~ _ ~ command =>
-    val name = maybeName getOrElse "example.com"
+  def server = "Server"
+  def program = server ~> "(" ~> name ~ comma ~ repo ~ comma ~ command <~ ")" ^^ { case name ~ _ ~ repo ~ _ ~ command =>
     DigitalOceanServer(name, ScalaRepo(repo, SBTCommand(command)))
   }
 
   def run(toParse: String) = {
-    this.parse(server, toParse) match {
+    this.parse(program, toParse) match {
       case Success(res, _) => res
     }
   }
